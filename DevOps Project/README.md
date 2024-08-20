@@ -23,7 +23,6 @@ To initialize the full process, run the following Bash script:
 ```bash
 ./Full-Process.sh
 ```
-
 ## Deploy Nexus Kubernetes Files
 
 Navigate to the Nexus files and run the following command to deploy:
@@ -52,7 +51,8 @@ helm install sprints-app ./sprints-app
 
 ## Configure Jenkins
 
-Access Jenkins via the Load Balancer URL. Configure Jenkins and install the necessary plugins to run the project.
+Access Jenkins via  GUI from provided EC2 IP and port 8080
+http://<EC2-IP>:8080 then install the necessary plugins to run the project.
 
 ### Installing Plugins
 
