@@ -52,7 +52,7 @@ helm install sprints-app ./sprints-app
 ## Configure Jenkins
 
 Access Jenkins via  GUI from provided EC2 IP and port 8080
-http://<EC2-IP>:8080 then install the necessary plugins to run the project.
+http://"EC2-IP":8080 then install the necessary plugins to run the project.
 
 ### Installing Plugins
 
