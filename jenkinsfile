@@ -5,7 +5,7 @@ pipeline {
         stage('Get code from GitHub') {
             steps {
                 git branch: 'main',
-                    credentialsId: 'a842c327-2a5d-48bc-b984-66c548631238',
+                    credentialsId: '7e212e24-2dcd-4459-935a-69014da9b777',
                     url: 'https://github.com/AhmedWael2397/Flask-App-Deployment-To-AWS`'
                 sh 'cd DevOps Project'
             }
