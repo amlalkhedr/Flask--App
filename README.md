@@ -1,6 +1,5 @@
 # DevOps Bootcamp Capstone Project
 
-![snip1](https://github.com/user-attachments/assets/b11dc189-68fc-4b56-a985-02ab65cc1b3b)
 
 ## Overview
 The goal of this DevOps Bootcamp Capstone Project is to establish a robust and automated CI/CD pipeline for deploying applications to a Kubernetes cluster on AWS. To achieve this, you will construct a comprehensive AWS infrastructure using Terraform, set up an EKS cluster for container orchestration, and deploy an EC2 instance to host Jenkins, your CI/CD server.
