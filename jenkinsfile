@@ -6,7 +6,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     credentialsId: '7e212e24-2dcd-4459-935a-69014da9b777',
-                    url: 'https://github.com/AhmedWael2397/Flask-App-Deployment-To-AWS`'
+                    url: 'https://github.com/AhmedWael2397/Flask-App-Deployment-To-AWS'
                 sh 'cd DevOps Project'
             }
         }
