@@ -5,14 +5,19 @@ pipeline {
         stage('Get code from GitHub') {
             steps {
                 git branch: 'main',
-                    credentialsId: 'a842c327-2a5d-48bc-b984-66c548631238',
+                    credentialsId: '7e212e24-2dcd-4459-935a-69014da9b777',
                     url: 'https://github.com/AhmedWael2397/Flask-App-Deployment-To-AWS`'
-                sh 'cd BucketList-App'
+                
             }
         }
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t flaskapp:latest .'
+                sh 
+                '''
+                cd BucketList-App
+                docker build -t flaskapp:latest .
+                
+                '''
             }
         }
         stage('Push Image to Nexus') {
@@ -21,7 +26,7 @@ pipeline {
                     def nexusUser = 'admin'
                     def nexusPassword = 'admin'
                     def nexusUrl = 'http://adcfbfd6b687241449ee080f963abb58-591372858.eu-central-1.elb.amazonaws.com:8081/repository/Flask-app/'
-                    def nexusHostname = 'adcfbfd6b687241449ee080f963abb58-591372858.eu-central-1.elb.amazonaws.com:8085'
+                    def nexusHostname = 'adcfbfd6b687241449ee080f963abb58-591372858.eu-central-1.elb.amazonaws.com:8081'
                     def imageName = 'flaskapp:latest'
 
                     // Log in to Nexus
