@@ -5,10 +5,9 @@ pipeline {
         stage('Get code from GitHub') {
             steps {
                 git branch: 'main',
-                    credentialsId: 'f5bdcde3-4b1e-4772-8df2-47f3b760970f',
-                    url: 'https://github.com/moustafa-ismail/project-sprints'
-                sh 'cd Sprints_W5-_Final'
-                sh 'ls -altr'
+                    credentialsId: 'a842c327-2a5d-48bc-b984-66c548631238',
+                    url: 'https://github.com/AhmedWael2397/Flask-App-Deployment-To-AWS`'
+                sh 'cd BucketList-App'
             }
         }
         stage('Build Docker Image') {
@@ -20,9 +19,9 @@ pipeline {
             steps {
                 script {
                     def nexusUser = 'admin'
-                    def nexusPassword = '123'
-                    def nexusUrl = 'http://ad88db502381e46a4b47f813036bb426-421067397.us-west-1.elb.amazonaws.com:8085/repository/sprints-project/'
-                    def nexusHostname = 'ad88db502381e46a4b47f813036bb426-421067397.us-west-1.elb.amazonaws.com:8085'
+                    def nexusPassword = 'admin'
+                    def nexusUrl = 'http://adcfbfd6b687241449ee080f963abb58-591372858.eu-central-1.elb.amazonaws.com:8081/repository/Flask-app/'
+                    def nexusHostname = 'adcfbfd6b687241449ee080f963abb58-591372858.eu-central-1.elb.amazonaws.com:8085'
                     def imageName = 'flaskapp:latest'
 
                     // Log in to Nexus
