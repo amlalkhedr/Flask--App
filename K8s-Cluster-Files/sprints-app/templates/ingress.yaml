@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/affinity: "cookie"  # Enable sticky sessions
+    nginx.ingress.kubernetes.io/session-cookie-name: "route"  # Name for the session cookie
+    nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"  # Hashing algorithm for the cookie
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"  # Health check: Increase the timeout for reading the response
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"  # Health check: Increase the timeout for sending the request
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: flask-app-service
+            port:
+              number: 80
+

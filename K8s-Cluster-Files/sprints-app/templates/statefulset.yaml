@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.statefulset.name }}
+spec:
+  serviceName: {{ .Values.statefulset.serviceName }}
+  replicas: {{ .Values.statefulset.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.statefulset.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.statefulset.app }}
+    spec:
+      containers:
+      - name: {{ .Values.statefulset.app }}
+        image: {{ .Values.statefulset.image }}
+        ports:
+        - containerPort: {{ .Values.statefulset.containerPort }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.statefulset.configMapName }}
+        volumeMounts:
+        - mountPath: {{ .Values.statefulset.volumeMountPath }}
+          name: {{ .Values.statefulset.volumeName }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ .Values.statefulset.volumeName }}
+    spec:
+      accessModes: [ {{ .Values.statefulset.accessMode }} ]
+      storageClassName: {{ .Values.statefulset.storageClassName }}
+      resources:
+        requests:
+          storage: {{ .Values.statefulset.storageRequest }}

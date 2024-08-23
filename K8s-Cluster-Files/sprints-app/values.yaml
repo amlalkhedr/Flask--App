@@ -1,0 +1,66 @@
+app:
+  name: flask-app
+  replicaCount: 1
+  image: public.ecr.aws/e0b6j3u3/project:latest
+  containerPort: 5002
+
+mysqlSecrets:
+  name: mysql-secrets
+
+service:
+  name: flask-app-service
+  port: 80
+  targetPort: 5002
+  type: ClusterIP
+
+statefulset:
+  name: mysql
+  serviceName: mysql
+  replicaCount: 1
+  app: mysql
+  image: public.ecr.aws/e0b6j3u3/db:latest
+  containerPort: 3306
+  configMapName: mysql-config
+  volumeMountPath: /var/opt
+  volumeName: mysql-data
+  accessMode: ReadWriteOnce
+  storageClassName: ""  # Specify a valid storage class name if necessary
+  storageRequest: 1Gi
+
+dbService:
+  name: db-svc
+  port: 3306
+  clusterIP: None
+
+persistentVolume:
+  name: task-pv-volume
+  type: local
+  storageClassName: ""  # Specify a valid storage class name if necessary
+  capacity: 10Gi
+  accessMode: ReadWriteOnce
+  hostPath: /mnt/data
+
+configMap:
+  name: mysql-secrets
+  user: root
+  password: root
+  db: BucketList
+  host: db-svc
+
+mysqlConfigMap:
+  name: mysql-config
+  rootPassword: root
+
+ingress:
+  name: app-ingress
+  annotations:
+    rewriteTarget: /
+    affinity: "cookie"
+    sessionCookieName: "route"
+    sessionCookieHash: "sha1"
+    proxyReadTimeout: "60"
+    proxySendTimeout: "60"
+  ingressClassName: nginx
+  paths:
+    path: /
+    pathType: Prefix
