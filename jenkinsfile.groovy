@@ -12,8 +12,7 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                sh 
-                '''
+                sh '''
                 cd BucketList-App
                 docker build -t flaskapp:latest .
                 
