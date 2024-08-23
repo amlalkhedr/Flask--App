@@ -7,7 +7,7 @@ pipeline {
                 git branch: 'main',
                     credentialsId: 'a842c327-2a5d-48bc-b984-66c548631238',
                     url: 'https://github.com/AhmedWael2397/Flask-App-Deployment-To-AWS`'
-                sh 'cd BucketList-App'
+                sh 'cd DevOps Project'
             }
         }
         stage('Build Docker Image') {
