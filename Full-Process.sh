@@ -71,7 +71,7 @@ echo "Terraform public IP has been added to the Ansible configuration file: $ANS
 #install jenkins on ec2 
 cd ../Ansible
 ansible-playbook -i inventory.ini Jenkins-install-playbook.yml -K
-ansible-playbook -i inventory.ini 
+#ansible-playbook -i inventory.ini 
 
 echo "**************************************************"
 echo " NOW GO INSTALL JENKINS needed plugins Manually on GUI "
