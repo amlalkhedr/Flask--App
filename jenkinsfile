@@ -7,14 +7,13 @@ pipeline {
                 git branch: 'main',
                     credentialsId: '7e212e24-2dcd-4459-935a-69014da9b777',
                     url: 'https://github.com/AhmedWael2397/Flask-App-Deployment-To-AWS'
-
             }
         }
         stage('Build Docker Image') {
             steps {
                 sh '''
-                cd DevOps-Project
-                sudo docker build -t flaskapp:latest .
+                    cd DevOps-Project
+                    sudo docker build -t flaskapp:latest .
                 '''
             }
         }
@@ -27,8 +26,8 @@ pipeline {
                     def nexusHostname = 'adcfbfd6b687241449ee080f963abb58-591372858.eu-central-1.elb.amazonaws.com:8081'
                     def imageName = 'flaskapp:latest'
 
-                    // Log in to Nexus
-                    sh "echo ${nexusPassword} | docker login -u ${nexusUser} -p ${nexusPassword} ${nexusUrl}"
+                    // Log in to Nexus using HTTP
+                    sh "echo ${nexusPassword} | docker login -u ${nexusUser} --password-stdin ${nexusUrl}"
 
                     // Tag the image with the Nexus repository URL
                     sh "docker tag flaskapp:latest ${nexusHostname}/flaskapp:latest"
