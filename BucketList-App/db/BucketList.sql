@@ -1,6 +1,6 @@
 -- Local database definition.
 
-CREATE DATABASE BucketList;
+#CREATE DATABASE BucketList;
 
 
 CREATE TABLE `BucketList`.`tbl_user` (

@@ -1,5 +1,4 @@
-flask
-mysql-connector
-flask-mysql
-mysql
-cryptography
+Flask==2.2.2
+Werkzeug==2.2.3
+mysql-connector-python==8.0.33
+flask-session==0.4.0

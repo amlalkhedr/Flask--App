@@ -2,44 +2,54 @@
 <html lang="en">
  
 <head>
+    <meta charset="UTF-8">
     <title>Python Flask Bucket List App</title>
- 
- 
+
+    <!-- Bootstrap CSS -->
     <link href="https://getbootstrap.com/docs/3.4/dist/css/bootstrap.min.css" rel="stylesheet">
- 
     <link href="https://getbootstrap.com/docs/3.4/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
     <link href="../static/css/signup.css" rel="stylesheet">
-    <script src="../static/js/jquery-1.12.2.js"></script>
-    <script src="../static/js/jquery-1.11.2.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+
+    <!-- Custom JavaScript -->
     <script>
-        $(function(){
+        $(document).ready(function(){
             $.ajax({
-                url : '/getWish',
-                type : 'GET',
-                success: function(res){
-                    var div = $('<div>')
-        .attr('class', 'list-group')
-        .append($('<a>')
-            .attr('class', 'list-group-item active')
-            .append($('<h4>')
-                .attr('class', 'list-group-item-heading'),
-                $('<p>')
-                .attr('class', 'list-group-item-text')));
-                                    
-                    
-                    
-                    var wishObj = JSON.parse(res);
-                    var wish = '';
-                    
-                    $.each(wishObj,function(index, value){
-                        wish = $(div).clone();
-                        $(wish).find('h4').text(value.Title);
-                        $(wish).find('p').text(value.Description);
-                        $('.jumbotron').append(wish);
+                url: '/getWish',
+                type: 'GET',
+                dataType: 'json', // Expect JSON response
+                success: function(wishObj){
+                    // Clear existing content inside jumbotron (optional)
+                    $('.jumbotron').empty();
+
+                    if (wishObj.length === 0) {
+                        $('.jumbotron').append('<p>No wishes found.</p>');
+                        return;
+                    }
+
+                    // Create a list group container
+                    var listGroup = $('<div>').addClass('list-group');
+
+                    // Loop through the wishObj array and append each wish to the list group
+                    $.each(wishObj, function(index, value){
+                        var item = $('<a>')
+                            .addClass('list-group-item')
+                            .attr('href', '#') // You can set this to a relevant URL
+                            .append(
+                                $('<h4>').addClass('list-group-item-heading').text(value.Title),
+                                $('<p>').addClass('list-group-item-text').text(value.Description)
+                            );
+                        listGroup.append(item);
                     });
+
+                    // Append the complete list group to the jumbotron
+                    $('.jumbotron').append(listGroup);
                 },
-                error: function(error){
-                    console.log(error);
+                error: function(xhr, status, error){
+                    console.error('AJAX Error:', status, error);
+                    $('.jumbotron').append('<p>Error loading wishes.</p>');
                 }
             });
         });
@@ -53,8 +63,7 @@
         <div class="header">
             <nav>
                 <ul class="nav nav-pills pull-right">
-                    <li role="presentation" class="active"><a href="/logout">Logout</a>
-                    </li>
+                    <li role="presentation" class="active"><a href="/logout">Logout</a></li>
                     <li role="presentation"><a href="/showAddWish">Add Wish</a></li>
                 </ul>
             </nav>
@@ -62,10 +71,8 @@
         </div>
  
         <div class="jumbotron">
-            
- 
+            <!-- Wishes will be loaded here -->
         </div>
- 
  
         <footer class="footer">
             <p>&copy; Company 2015</p>
