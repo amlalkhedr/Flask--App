@@ -3,12 +3,18 @@
  
 <head>
     <meta charset="UTF-8">
-    <title>Python Flask Bucket List App</title>
+    <title>Your Home</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://getbootstrap.com/docs/3.4/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://getbootstrap.com/docs/3.4/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
     <link href="../static/css/signup.css" rel="stylesheet">
+
+    <style>
+        .editable-title {
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
+    </style>
 
     <!-- jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
@@ -19,9 +25,8 @@
             $.ajax({
                 url: '/getWish',
                 type: 'GET',
-                dataType: 'json', // Expect JSON response
+                dataType: 'json',
                 success: function(wishObj){
-                    // Clear existing content inside jumbotron (optional)
                     $('.jumbotron').empty();
 
                     if (wishObj.length === 0) {
@@ -29,22 +34,62 @@
                         return;
                     }
 
-                    // Create a list group container
                     var listGroup = $('<div>').addClass('list-group');
 
-                    // Loop through the wishObj array and append each wish to the list group
                     $.each(wishObj, function(index, value){
-                        var item = $('<a>')
-                            .addClass('list-group-item')
-                            .attr('href', '#') // You can set this to a relevant URL
-                            .append(
-                                $('<h4>').addClass('list-group-item-heading').text(value.Title),
-                                $('<p>').addClass('list-group-item-text').text(value.Description)
-                            );
+                        console.log(index,value);
+                        var item = $('<div>').addClass('list-group-item');
+
+                        var title = $('<h4>')
+                            .addClass('list-group-item-heading editable-title') // Add class for cursor style
+                            .text(value.Title)
+                            .click(function() {
+                                // Functionality to edit the wish
+                                var newTitle = prompt("Edit Title:", value.Title);
+                                var newDescription = prompt("Edit Description:", value.Description);
+                                if (newTitle && newDescription) {
+                                    $.ajax({
+                                        url: '/editWish/' + value.Id,
+                                        type: 'PUT',
+                                        contentType: 'application/json',
+                                        data: JSON.stringify({ Title: newTitle, Description: newDescription }),
+                                        success: function() {
+                                            // Reload wishes after edit
+                                            location.reload();
+                                        },
+                                        error: function() {
+                                            alert('Error updating wish.');
+                                        }
+                                    });
+                                }
+                            });
+
+                        var description = $('<p>').addClass('list-group-item-text').text(value.Description);
+
+                        var deleteButton = $('<button>')
+                            .addClass('btn btn-danger btn-xs delete-btn')
+                            .html('<i class="glyphicon glyphicon-trash"></i>') // Bootstrap trash can icon
+                            .data('Id', value.Id)
+                            .click(function() {
+                                if (confirm("Are you sure you want to delete this wish?")) {
+                                    $.ajax({
+                                        url: '/deleteWish/' + value.Id,
+                                        type: 'DELETE',
+                                        success: function() {
+                                            // Reload wishes after delete
+                                            location.reload();
+                                        },
+                                        error: function() {
+                                            alert('Error deleting wish.');
+                                        }
+                                    });
+                                }
+                            });
+
+                        item.append(title, description, deleteButton);
                         listGroup.append(item);
                     });
 
-                    // Append the complete list group to the jumbotron
                     $('.jumbotron').append(listGroup);
                 },
                 error: function(xhr, status, error){
@@ -75,7 +120,7 @@
         </div>
  
         <footer class="footer">
-            <p>&copy; Company 2015</p>
+            <p>&copy; Company 2024</p>
         </footer>
  
     </div>

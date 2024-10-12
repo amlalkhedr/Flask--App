@@ -11,7 +11,6 @@ services:
       MYSQL_DATABASE_PASSWORD: your_password
       MYSQL_DATABASE_DB: BucketList
       MYSQL_DATABASE_HOST: db
-
     depends_on:
       - db
 

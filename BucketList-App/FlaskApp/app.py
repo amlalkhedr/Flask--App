@@ -81,7 +81,6 @@ def validateLogin():
     else:
         return render_template('error.html', error='Wrong Email address or Password')
 
-
 @app.route('/userHome')
 def userHome():
     if 'user' in session:
@@ -125,7 +124,7 @@ def getWish():
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("select * from tbl_wish where wish_user_id =  %s", (_user,))
+        cursor.execute("SELECT * FROM tbl_wish WHERE wish_user_id = %s", (_user,))
         wishes = cursor.fetchall()
 
         wishes_dict = [
@@ -140,6 +139,34 @@ def getWish():
         return jsonify(wishes_dict)
     else:
         return render_template('error.html', error='Unauthorized Access')
+
+@app.route('/editWish/<int:wish_id>', methods=['PUT'])
+def editWish(wish_id):
+    if 'user' in session:
+        data = request.get_json()
+        new_title = data.get('Title')
+        new_description = data.get('Description')
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE tbl_wish SET wish_title = %s, wish_description = %s WHERE wish_id = %s", (new_title, new_description, wish_id))
+        conn.commit()
+
+        return jsonify({'message': 'Wish updated successfully!'})
+    else:
+        return jsonify({'error': 'Unauthorized Access'}), 403
+
+@app.route('/deleteWish/<int:wish_id>', methods=['DELETE'])
+def deleteWish(wish_id):
+    if 'user' in session:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM tbl_wish WHERE wish_id = %s", (wish_id,))
+        conn.commit()
+
+        return jsonify({'message': 'Wish deleted successfully!'})
+    else:
+        return jsonify({'error': 'Unauthorized Access'}), 403
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5002, debug=True)
