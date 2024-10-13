@@ -17,6 +17,10 @@ output "jenkins_instance_id" {
 
 output "jenkins_sg_id" {
   value = module.security_groups.jenkins_sg_id
+
 }
 
+output "jenkins_public_ip" {
+  value = module.ec2.public_ip
+}
 
