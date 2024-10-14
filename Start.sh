@@ -24,3 +24,6 @@ echo "Jenkins ansible_host=${JENKINS_IP} ansible_user=ubuntu ansible_ssh_private
 #install jenkins on ec2 
 cd ./Ansible
 ansible-playbook -i inventory.ini Jenkins-install-playbook.yml -K
+
+#install Docker on ec2 
+ansible-playbook -i inventory.ini Docker-install-playbook.yml -K
