@@ -1,0 +1,23 @@
+pipeline{
+    agent any 
+    stages {
+        stage('prep'){
+            steps{
+                 git credentialsId: 'github', url: 'https://github.com/wwmezo0/Flask-App.git', branch: 'main'
+                    
+
+            }
+        }
+        
+    stage('build'){
+        steps {
+            withCredentials([usernamePassword(credentialsId:"docker",usernameVariable:"USER",passwordVariable:"PASS")]){
+            sh 'docker build ./BucketList-App/FlaskApp/ -t ${USER}/flask:v1'
+            sh 'docker login -u ${USER} -p ${PASS}'
+            sh 'docker push ${USER}/flask:v1'
+                
+            }
+        }
+    }
+    }
+}
