@@ -1,9 +1,9 @@
 output "cluster_name" {
-  value = aws_eks_cluster.eks_cluster.name
+  value = aws_eks_cluster.Flask-EKS.name
 }
 
 output "cluster_endpoint" {
-  value = aws_eks_cluster.eks_cluster.endpoint
+  value = aws_eks_cluster.Flask-EKS.endpoint
 }
 
 output "node_group_role" {

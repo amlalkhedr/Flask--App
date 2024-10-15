@@ -29,13 +29,13 @@ resource "aws_eks_cluster" "Flask-EKS" {
   }
 
   # Kubernetes version
-  version = "1.21"
+  version = "1.30"
 }
 
 # Worker nodes for EKS cluster (node group)
 resource "aws_eks_node_group" "Flask-node-group" {
   cluster_name    = aws_eks_cluster.Flask-EKS.name
-  node_role       = aws_iam_role.eks_node_group_role.arn
+  node_role_arn   = aws_iam_role.eks_node_group_role.arn
   subnet_ids      = [var.public_subnet_id, var.private_subnet_id]
 
   scaling_config {
