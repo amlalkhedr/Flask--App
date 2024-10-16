@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-mysql-deployment
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flask-mysql-app
+  template:
+    metadata:
+      labels:
+        app: flask-mysql-app
+    spec:
+      containers:
+      - name: flask-app
+        image: wwmezo/flask:v1  # Replace with your Flask app image
+        ports:
+        - containerPort: 5002
+        - containerPort: 5003
+        env:
+        - name: MYSQL_DATABASE_USER
+          value: "your_user"
+        - name: MYSQL_DATABASE_PASSWORD
+          value: "your_password"
+        - name: MYSQL_DATABASE_DB
+          value: "BucketList"
+        - name: MYSQL_DATABASE_HOST
+          value: "mysql"
+      - name: mysql
+        image: mysql:5.7  # MySQL image
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "root_password"
+        - name: MYSQL_DATABASE
+          value: "BucketList"
+        - name: MYSQL_USER
+          value: "your_user"
+        - name: MYSQL_PASSWORD
+          value: "your_password"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-storage
+      volumes:
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc
