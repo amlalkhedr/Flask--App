@@ -2,26 +2,10 @@ provider "aws" {
   region = var.region
 }
 
-# IAM Role for the EKS cluster (Cluster-main)
-resource "aws_iam_role" "Cluster-main" {
-  name = "Cluster-main"
-  
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "eks.amazonaws.com"
-      }
-    }]
-  })
-}
-
 # EKS Cluster definition
 resource "aws_eks_cluster" "Flask-EKS" {
-  name     = "Flask-EKS"
-  role_arn = aws_iam_role.Cluster-main.arn
+ name     = var.cluster_name  # Use the variable 
+  role_arn = aws_iam_role.Cluster-main.arn  # Referencing the Cluster-main role
   
   # VPC Configuration with Public and Private subnets
   vpc_config {
@@ -35,8 +19,8 @@ resource "aws_eks_cluster" "Flask-EKS" {
 # Worker nodes for EKS cluster (node group)
 resource "aws_eks_node_group" "Flask-node-group" {
   cluster_name    = aws_eks_cluster.Flask-EKS.name
-  node_role_arn   = aws_iam_role.eks_node_group_role.arn
-  subnet_ids      = [var.public_subnet_id, var.private_subnet_id]
+  node_role_arn   = aws_iam_role.WorkerNode.arn  # Updated WorkerNode role
+  subnet_ids      = [var.public_subnet_id]
 
   scaling_config {
     desired_size = 1  # Normally 1 worker node
@@ -44,13 +28,22 @@ resource "aws_eks_node_group" "Flask-node-group" {
     min_size     = 1  # Minimum of 1 worker node
   }
 
-  instance_types = ["t2.micro"]
+  instance_types = ["t3.medium"]  # For more CPU and memory capacity
+  disk_size      = 50  # Increase disk size for production workloads
+  ami_type = "AL2_x86_64"  # Amazon Linux 2 (64-bit)
   
   remote_access {
-    ec2_ssh_key = var.ssh_key_name  
+    ec2_ssh_key                     = var.ssh_key_name  
+    source_security_group_ids       = [var.security_group]  # Add security group here
   }
 
+  
+  # Ensure proper dependencies for worker node policies
   depends_on = [
-    aws_eks_cluster.Flask-EKS
+    aws_eks_cluster.Flask-EKS,
+    aws_iam_role_policy_attachment.eks_worker_node_policy,
+    aws_iam_role_policy_attachment.eks_cni_policy,
+    aws_iam_role_policy_attachment.eks_ecr_read_only_policy,
+    aws_iam_role_policy_attachment.eks_ebs_policy  # Ensure EBS policy is included
   ]
 }

@@ -20,7 +20,8 @@ module "EKS" {
   source = "./Modules/EKS"
   public_subnet_id  = module.vpc.public_subnet_id
   private_subnet_id = module.vpc.private_subnet_id
-  security_group = module.security_groups.security_group_id
+   # Pass the security group ID to the EKS module
+  security_group    = module.security_groups.security_group_id
 }
 
 

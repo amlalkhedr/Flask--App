@@ -22,3 +22,8 @@ variable "security_group" {
 variable "ssh_key_name"{
   default = "project"
 }
+
+#variable "worker_security_group_id" {
+  #description = "The security group ID for SSH access to worker nodes"
+  #type        = string
+#}
