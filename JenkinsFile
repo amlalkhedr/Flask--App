@@ -12,7 +12,7 @@ pipeline{
     stage('build'){
         steps {
             withCredentials([usernamePassword(credentialsId:"docker",usernameVariable:"USER",passwordVariable:"PASS")]){
-            sh 'docker build ./BucketList-App/FlaskApp/ -t ${USER}/flask:v1'
+            sh 'docker build ./BucketList-App/FlaskApp/ -t ${USER}/flask'
             sh 'docker login -u ${USER} -p ${PASS}'
             sh 'docker push ${USER}/flask:v1'
                 
