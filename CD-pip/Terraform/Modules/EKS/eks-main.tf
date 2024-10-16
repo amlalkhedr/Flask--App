@@ -28,8 +28,8 @@ resource "aws_eks_node_group" "Flask-node-group" {
     min_size     = 1  # Minimum of 1 worker node
   }
 
-  instance_types = ["t3.medium"]  # For more CPU and memory capacity
-  disk_size      = 50  # Increase disk size for production workloads
+  instance_types = ["t2.micro"]  # For more CPU and memory capacity
+  disk_size      = 30  # Increase disk size for production workloads
   ami_type = "AL2_x86_64"  # Amazon Linux 2 (64-bit)
   
   remote_access {
