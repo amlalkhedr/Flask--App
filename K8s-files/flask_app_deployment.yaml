@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-deployment
+  namespace: default
+spec:
+  replicas: 2  # You can scale this separately now
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app  # This is the unique label for Flask pods
+    spec:
+      containers:
+      - name: flask-app
+        image: wwmezo/flask  # Replace with your Flask app image
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5002  # This is where Flask is running
+        env:
+        - name: MYSQL_DATABASE_USER
+          value: "your_user"
+        - name: MYSQL_DATABASE_PASSWORD
+          value: "your_password"
+        - name: MYSQL_DATABASE_DB
+          value: "BucketList"
+        - name: MYSQL_DATABASE_HOST
+          value: "mysql-service"  # MySQL will be a separate service in the cluster

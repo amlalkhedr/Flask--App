@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+  namespace: default
+spec:
+  replicas: 1  # Typically just one instance for MySQL
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql  # This is the unique label for MySQL pods
+    spec:
+      containers:
+      - name: mysql
+        image: wwmezo/db # MySQL image
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "root_password"
+        - name: MYSQL_DATABASE
+          value: "BucketList"
+        - name: MYSQL_USER
+          value: "your_user"
+        - name: MYSQL_PASSWORD
+          value: "your_password"
+        ports:
+        - containerPort: 3306  # MySQL runs on port 3306
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-storage
+      volumes:
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc  # Use the existing PVC for MySQL storage
