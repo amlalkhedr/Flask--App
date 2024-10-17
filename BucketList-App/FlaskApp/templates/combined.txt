@@ -1,0 +1,559 @@
+### app.py ###
+from flask import Flask, render_template, json, request, redirect, session, jsonify
+from flask_session import Session
+import mysql.connector
+import os
+
+app = Flask(__name__)
+
+# Configure Flask-Session
+app.config['SESSION_TYPE'] = 'filesystem'
+Session(app)
+
+# MySQL configurations
+app.config['MYSQL_DATABASE_USER'] = os.getenv('MYSQL_DATABASE_USER')
+app.config['MYSQL_DATABASE_PASSWORD'] = os.getenv('MYSQL_DATABASE_PASSWORD')
+app.config['MYSQL_DATABASE_DB'] = os.getenv('MYSQL_DATABASE_DB')
+app.config['MYSQL_DATABASE_HOST'] = os.getenv('MYSQL_DATABASE_HOST')
+
+# Set a secret key for the session
+app.secret_key = os.getenv('SECRET_KEY', 'your_default_secret_key')
+
+def get_db_connection():
+    return mysql.connector.connect(
+        user=app.config['MYSQL_DATABASE_USER'],
+        password=app.config['MYSQL_DATABASE_PASSWORD'],
+        host=app.config['MYSQL_DATABASE_HOST'],
+        database=app.config['MYSQL_DATABASE_DB']
+    )
+
+@app.route("/")
+def main():
+    print("Hello from the Flask server console!")
+    return render_template('index.html')
+
+@app.route('/showSignUp')
+def showSignUp():
+    return render_template('signup.html')
+
+@app.route('/signUp', methods=['POST'])
+def signUp():
+    _name = request.form['inputName']
+    _email = request.form['inputEmail']
+    _password = request.form['inputPassword']
+
+    if _name and _email and _password:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.callproc('sp_createUser', (_name, _email, _password))
+        data = cursor.fetchall()
+        print("data")
+        if len(data) == 0:
+            conn.commit()
+            return jsonify({'message': 'User created successfully!'})
+        else:
+            return jsonify({'error': str(data[0])})
+    else:
+        return jsonify({'html': '<span>Enter the required fields</span>'})
+
+@app.route('/showSignIn')
+def showSignin():
+    return render_template('signin.html')
+
+@app.route('/validateLogin', methods=['POST'])
+def validateLogin():
+    _username = request.form['inputEmail']
+    _password = request.form['inputPassword']
+
+    conn = get_db_connection()
+    print(conn)
+    cursor = conn.cursor(buffered=True)  # Enable buffered cursor
+    
+    cursor.execute("SELECT * FROM tbl_user WHERE user_username = %s", (_username,))
+    
+    # Fetch results after the procedure execution
+    data = cursor.fetchone()
+    print(data)
+    
+    if data and data[3] == _password:  # Ensure the index for password is correct
+        session['user'] = data[0]
+        return redirect('/userHome')
+    else:
+        return render_template('error.html', error='Wrong Email address or Password')
+
+@app.route('/userHome')
+def userHome():
+    if 'user' in session:
+        return render_template('userHome.html')
+    else:
+        return render_template('error.html', error='Unauthorized Access')
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect('/')
+
+@app.route('/showAddWish')
+def showAddWish():
+    return render_template('addWish.html')
+
+@app.route('/addWish', methods=['POST'])
+def addWish():
+    if 'user' in session:
+        _title = request.form['inputTitle']
+        _description = request.form['inputDescription']
+        _user = session['user']
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.callproc('sp_addWish', (_title, _description, _user))
+        data = cursor.fetchall()
+
+        if len(data) == 0:
+            conn.commit()
+            return redirect('/userHome')
+        else:
+            return render_template('error.html', error='An error occurred!')
+    else:
+        return render_template('error.html', error='Unauthorized Access')
+
+@app.route('/getWish')
+def getWish():
+    if 'user' in session:
+        _user = session['user']
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM tbl_wish WHERE wish_user_id = %s", (_user,))
+        wishes = cursor.fetchall()
+
+        wishes_dict = [
+            {
+                'Id': wish[0],
+                'Title': wish[1],
+                'Description': wish[2],
+                'Date': wish[4]
+            } for wish in wishes
+        ]
+
+        return jsonify(wishes_dict)
+    else:
+        return render_template('error.html', error='Unauthorized Access')
+
+@app.route('/editWish/<int:wish_id>', methods=['PUT'])
+def editWish(wish_id):
+    if 'user' in session:
+        data = request.get_json()
+        new_title = data.get('Title')
+        new_description = data.get('Description')
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE tbl_wish SET wish_title = %s, wish_description = %s WHERE wish_id = %s", (new_title, new_description, wish_id))
+        conn.commit()
+
+        return jsonify({'message': 'Wish updated successfully!'})
+    else:
+        return jsonify({'error': 'Unauthorized Access'}), 403
+
+@app.route('/deleteWish/<int:wish_id>', methods=['DELETE'])
+def deleteWish(wish_id):
+    if 'user' in session:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM tbl_wish WHERE wish_id = %s", (wish_id,))
+        conn.commit()
+
+        return jsonify({'message': 'Wish deleted successfully!'})
+    else:
+        return jsonify({'error': 'Unauthorized Access'}), 403
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5002, debug=True)
+
+### addWish.html ###
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <title>Python Flask Bucket List App</title>
+ 
+ 
+    <link href="https://getbootstrap.com/docs/3.4/dist/css/bootstrap.min.css" rel="stylesheet">
+ 
+    <link href="https://getbootstrap.com/docs/3.4/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+ 
+    <script src="../static/js/jquery-1.12.2.js"></script>
+ 
+ 
+</head>
+ 
+<body>
+ 
+    <div class="container">
+        <div class="header">
+            <nav>
+                <ul class="nav nav-pills pull-right">
+                    <li role="presentation" class="active"><a href="#">Add Item</a>
+                    </li>
+                    <li role="presentation"><a href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </nav>
+            <h3 class="text-muted">Python Flask App</h3>
+        </div>
+        <section>
+            <form class="form-horizontal" method="post" action="/addWish">
+                <fieldset>
+ 
+                    <!-- Form Name -->
+                    <legend>Create Your Wish</legend>
+ 
+                    <!-- Text input-->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="txtTitle">Title</label>
+                        <div class="col-md-4">
+                            <input id="txtTitle" name="inputTitle" type="text" placeholder="placeholder" class="form-control input-md">
+                        </div>
+                    </div>
+ 
+                    <!-- Textarea -->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="txtPost">Post</label>
+                        <div class="col-md-4">
+                            <textarea class="form-control" id="txtPost" name="inputDescription"></textarea>
+                        </div>
+                    </div>
+ 
+                    <!-- Button -->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="singlebutton"></label>
+                        <div class="col-md-4">
+                            <input id="singlebutton" name="singlebutton" class="btn btn-primary" type="submit" value="Publish" />
+                        </div>
+                    </div>
+ 
+                </fieldset>
+            </form>
+ 
+        </section>
+        <footer class="footer">
+            <p>&copy; Company 2015</p>
+        </footer>
+ 
+    </div>
+</body>
+ 
+</html>
+
+### signin.html ###
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Python Flask Bucket List App</title>
+ 
+    
+    <link href="https://getbootstrap.com/docs/3.4/dist/css/bootstrap.min.css" rel="stylesheet">
+ 
+    <link href="https://getbootstrap.com/docs/3.4/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+    <link href="../static/css/signup.css" rel="stylesheet">
+    <script src="../static/js/jquery-1.12.2.js"></script>
+    
+  </head>
+ 
+  <body>
+ 
+    <div class="container">
+      <div class="header">
+        <nav>
+          <ul class="nav nav-pills pull-right">
+            <li role="presentation" ><a href="/">Home</a></li>
+            <li role="presentation" class="active"><a href="#">Sign In</a></li>
+            <li role="presentation" ><a href="/showSignUp">Sign Up</a></li>
+          </ul>
+        </nav>
+        <h3 class="text-muted">Python Flask App</h3>
+      </div>
+ 
+      <div class="jumbotron">
+        <h1>Bucket List App</h1>
+        <form class="form-signin" action="/validateLogin" method="post">
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input type="email" name="inputEmail" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" name="inputPassword" id="inputPassword" class="form-control" placeholder="Password" required>
+         
+        <button id="btnSignIn" class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+      </form>
+      </div>
+ 
+       
+ 
+      <footer class="footer">
+        <p>&copy; Company 2015</p>
+      </footer>
+ 
+    </div>
+  </body>
+</html>
+
+### signup.html ###
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Python Flask Bucket List App</title>
+ 
+    
+    <link href="https://getbootstrap.com/docs/3.4/dist/css/bootstrap.min.css" rel="stylesheet">
+ 
+    <link href="https://getbootstrap.com/docs/3.4/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+    <link href="../static/css/signup.css" rel="stylesheet">
+    <script src="../static/js/jquery-1.12.2.js"></script>
+    <script src="../static/js/signUp.js"> </script>
+    
+  </head>
+ 
+  <body>
+ 
+    <div class="container">
+      <div class="header">
+        <nav>
+          <ul class="nav nav-pills pull-right">
+            <li role="presentation" ><a href="/">Home</a></li>
+            <li role="presentation"><a href="showSignIn">Sign In</a></li>
+            <li role="presentation" class="active"><a href="showSignUp">Sign Up</a></li>
+          </ul>
+        </nav>
+        <h3 class="text-muted">Python Flask App</h3>
+      </div>
+ 
+      <div class="jumbotron">
+        <h1>Bucket List App</h1>
+        <form class="form-signin">
+        <label for="inputName" class="sr-only">Name</label>
+        <input type="name" name="inputName" id="inputName" class="form-control" placeholder="Name" required autofocus>
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input type="email" name="inputEmail" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" name="inputPassword" id="inputPassword" class="form-control" placeholder="Password" required>
+         
+        <button id="btnSignUp" class="btn btn-lg btn-primary btn-block" type="button">Sign up</button>
+      </form>
+      </div>
+ 
+       
+ 
+      <footer class="footer">
+        <p>&copy; Company 2015</p>
+      </footer>
+ 
+    </div>
+  </body>
+</html>
+### userHome.html ###
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <meta charset="UTF-8">
+    <title>Your Home</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://getbootstrap.com/docs/3.4/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://getbootstrap.com/docs/3.4/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+    <link href="../static/css/signup.css" rel="stylesheet">
+
+    <style>
+        .editable-title {
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
+    </style>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        $(document).ready(function(){
+            $.ajax({
+                url: '/getWish',
+                type: 'GET',
+                dataType: 'json',
+                success: function(wishObj){
+                    $('.jumbotron').empty();
+
+                    if (wishObj.length === 0) {
+                        $('.jumbotron').append('<p>No wishes found.</p>');
+                        return;
+                    }
+
+                    var listGroup = $('<div>').addClass('list-group');
+
+                    $.each(wishObj, function(index, value){
+                        console.log(index,value);
+                        var item = $('<div>').addClass('list-group-item');
+
+                        var title = $('<h4>')
+                            .addClass('list-group-item-heading editable-title') // Add class for cursor style
+                            .text(value.Title)
+                            .click(function() {
+                                // Functionality to edit the wish
+                                var newTitle = prompt("Edit Title:", value.Title);
+                                var newDescription = prompt("Edit Description:", value.Description);
+                                if (newTitle && newDescription) {
+                                    $.ajax({
+                                        url: '/editWish/' + value.Id,
+                                        type: 'PUT',
+                                        contentType: 'application/json',
+                                        data: JSON.stringify({ Title: newTitle, Description: newDescription }),
+                                        success: function() {
+                                            // Reload wishes after edit
+                                            location.reload();
+                                        },
+                                        error: function() {
+                                            alert('Error updating wish.');
+                                        }
+                                    });
+                                }
+                            });
+
+                        var description = $('<p>').addClass('list-group-item-text').text(value.Description);
+
+                        var deleteButton = $('<button>')
+                            .addClass('btn btn-danger btn-xs delete-btn')
+                            .html('<i class="glyphicon glyphicon-trash"></i>') // Bootstrap trash can icon
+                            .data('Id', value.Id)
+                            .click(function() {
+                                if (confirm("Are you sure you want to delete this wish?")) {
+                                    $.ajax({
+                                        url: '/deleteWish/' + value.Id,
+                                        type: 'DELETE',
+                                        success: function() {
+                                            // Reload wishes after delete
+                                            location.reload();
+                                        },
+                                        error: function() {
+                                            alert('Error deleting wish.');
+                                        }
+                                    });
+                                }
+                            });
+
+                        item.append(title, description, deleteButton);
+                        listGroup.append(item);
+                    });
+
+                    $('.jumbotron').append(listGroup);
+                },
+                error: function(xhr, status, error){
+                    console.error('AJAX Error:', status, error);
+                    $('.jumbotron').append('<p>Error loading wishes.</p>');
+                }
+            });
+        });
+    </script>
+ 
+</head>
+ 
+<body>
+ 
+    <div class="container">
+        <div class="header">
+            <nav>
+                <ul class="nav nav-pills pull-right">
+                    <li role="presentation" class="active"><a href="/logout">Logout</a></li>
+                    <li role="presentation"><a href="/showAddWish">Add Wish</a></li>
+                </ul>
+            </nav>
+            <h3 class="text-muted">Python Flask App</h3>
+        </div>
+ 
+        <div class="jumbotron">
+            <!-- Wishes will be loaded here -->
+        </div>
+ 
+        <footer class="footer">
+            <p>&copy; Company 2024</p>
+        </footer>
+ 
+    </div>
+</body>
+ 
+</html>
+
+### addWish.html ###
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <title>Python Flask Bucket List App</title>
+ 
+ 
+    <link href="https://getbootstrap.com/docs/3.4/dist/css/bootstrap.min.css" rel="stylesheet">
+ 
+    <link href="https://getbootstrap.com/docs/3.4/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+ 
+    <script src="../static/js/jquery-1.12.2.js"></script>
+ 
+ 
+</head>
+ 
+<body>
+ 
+    <div class="container">
+        <div class="header">
+            <nav>
+                <ul class="nav nav-pills pull-right">
+                    <li role="presentation" class="active"><a href="#">Add Item</a>
+                    </li>
+                    <li role="presentation"><a href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </nav>
+            <h3 class="text-muted">Python Flask App</h3>
+        </div>
+        <section>
+            <form class="form-horizontal" method="post" action="/addWish">
+                <fieldset>
+ 
+                    <!-- Form Name -->
+                    <legend>Create Your Wish</legend>
+ 
+                    <!-- Text input-->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="txtTitle">Title</label>
+                        <div class="col-md-4">
+                            <input id="txtTitle" name="inputTitle" type="text" placeholder="placeholder" class="form-control input-md">
+                        </div>
+                    </div>
+ 
+                    <!-- Textarea -->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="txtPost">Post</label>
+                        <div class="col-md-4">
+                            <textarea class="form-control" id="txtPost" name="inputDescription"></textarea>
+                        </div>
+                    </div>
+ 
+                    <!-- Button -->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="singlebutton"></label>
+                        <div class="col-md-4">
+                            <input id="singlebutton" name="singlebutton" class="btn btn-primary" type="submit" value="Publish" />
+                        </div>
+                    </div>
+ 
+                </fieldset>
+            </form>
+ 
+        </section>
+        <footer class="footer">
+            <p>&copy; Company 2015</p>
+        </footer>
+ 
+    </div>
+</body>
+ 
+</html>
+

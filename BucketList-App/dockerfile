@@ -1,0 +1,17 @@
+# Use the official MySQL 5.7 image
+FROM mysql:5.7
+
+# Set environment variables
+ENV MYSQL_ROOT_PASSWORD=root_password
+ENV MYSQL_DATABASE=BucketList
+ENV MYSQL_USER=your_user
+ENV MYSQL_PASSWORD=your_password
+
+# Copy existing database files into the image
+COPY ./db_data /var/lib/mysql
+
+# Ensure correct permissions
+RUN chown -R mysql:mysql /var/lib/mysql
+
+# Expose the MySQL port
+EXPOSE 3306
