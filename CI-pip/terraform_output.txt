@@ -1,0 +1,7 @@
+jenkins_instance_id = "i-0fafb32cc2d600efd"
+jenkins_public_ip = "3.88.16.119"
+jenkins_sg_id = "sg-0a041e4b6757e0d29"
+private_subnet_id = "subnet-0104d3a982625160b"
+public_subnet_id = "subnet-0897f3e8b01942399"
+vpc_id = "vpc-048ec022fbba24e9b"
+ssh -i /workspaces/codespaces-blank/CI-pip/Ansible/Jenkins_KP.pem ubuntu@3.88.16.119

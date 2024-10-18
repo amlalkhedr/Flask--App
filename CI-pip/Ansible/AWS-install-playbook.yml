@@ -44,27 +44,24 @@
 
     - name: Ensure .aws directory exists
       file:
-        path: "~/.aws"
+        path: "/var/lib/jenkins/.aws"
         state: directory
-        mode: '0700'  # Set permissions
-      become: no
+        mode: '0777'  # Set permissions
 
     - name: Configure AWS CLI
       copy:
-        dest: "~/.aws/config"
+        dest: "/var/lib/jenkins/.aws/config"
         content: |
           [default]
           region = {{ aws_region }}
-      become: no  # Ensure this is done as the user, not root
 
     - name: Configure AWS credentials
       copy:
-        dest: "~/.aws/credentials"
+        dest: "/var/lib/jenkins/.aws/credentials"
         content: |
           [default]
           aws_access_key_id = {{ aws_access_key }}
           aws_secret_access_key = {{ aws_secret_key }}
-      become: no  # Ensure this is done as the user, not root
 
     - name: Verify AWS CLI installation
       command: "aws --version"
