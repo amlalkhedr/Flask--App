@@ -22,8 +22,6 @@ pipeline{
     }
     stage('deploy'){
         steps {
-            sh 'aws eks --region us-east-1 update-kubeconfig --name my-eks-cluster'
-            sh 'kubectl delete -f K8s-files/flask_app_deployment.yaml'
             sh 'K8s-files/start_kubectl.sh'
                 
         }
