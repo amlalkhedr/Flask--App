@@ -8,10 +8,7 @@ ENV MYSQL_USER=your_user
 ENV MYSQL_PASSWORD=your_password
 
 # Copy existing database files into the image
-COPY ./db_data /var/lib/mysql
-
-# Ensure correct permissions
-RUN chown -R mysql:mysql /var/lib/mysql
+COPY db/BucketList.sql /docker-entrypoint-initdb.d/
 
 # Expose the MySQL port
 EXPOSE 3306

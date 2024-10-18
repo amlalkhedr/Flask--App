@@ -1,22 +1,18 @@
 from flask import Flask, render_template, json, request, redirect, session, jsonify
-from flask_session import Session
 import mysql.connector
 import os
 
 app = Flask(__name__)
 
-# Configure Flask-Session
-app.config['SESSION_TYPE'] = 'filesystem'
-Session(app)
+# Flask will automatically store session data in client-side cookies
+# Just ensure a secure secret key is set for signing session cookies
+app.secret_key = os.getenv('SECRET_KEY', 'your_default_secret_key')
 
 # MySQL configurations
 app.config['MYSQL_DATABASE_USER'] = os.getenv('MYSQL_DATABASE_USER')
 app.config['MYSQL_DATABASE_PASSWORD'] = os.getenv('MYSQL_DATABASE_PASSWORD')
 app.config['MYSQL_DATABASE_DB'] = os.getenv('MYSQL_DATABASE_DB')
 app.config['MYSQL_DATABASE_HOST'] = os.getenv('MYSQL_DATABASE_HOST')
-
-# Set a secret key for the session
-app.secret_key = os.getenv('SECRET_KEY', 'your_default_secret_key')
 
 def get_db_connection():
     return mysql.connector.connect(
@@ -67,16 +63,15 @@ def validateLogin():
 
     conn = get_db_connection()
     print(conn)
-    cursor = conn.cursor(buffered=True)  # Enable buffered cursor
+    cursor = conn.cursor(buffered=True)
     
     cursor.execute("SELECT * FROM tbl_user WHERE user_username = %s", (_username,))
     
-    # Fetch results after the procedure execution
     data = cursor.fetchone()
     print(data)
     
-    if data and data[3] == _password:  # Ensure the index for password is correct
-        session['user'] = data[0]
+    if data and data[3] == _password:
+        session['user'] = data[0]  # Storing user info in session (client-side cookie)
         return redirect('/userHome')
     else:
         return render_template('error.html', error='Wrong Email address or Password')

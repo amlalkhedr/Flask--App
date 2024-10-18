@@ -1,4 +1,5 @@
 #!/bin/bash
+aws eks --region us-east-1 update-kubeconfig --name my-eks-cluster 
 
 kubectl apply -f mysql_pv.yaml
 kubectl apply -f mysql_pvc.yaml

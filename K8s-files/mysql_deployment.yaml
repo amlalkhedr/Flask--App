@@ -16,15 +16,10 @@ spec:
       containers:
       - name: mysql
         image: wwmezo/db # MySQL image
+        imagePullPolicy: Always
         env:
-        - name: MYSQL_ROOT_PASSWORD
-          value: "root_password"
         - name: MYSQL_DATABASE
           value: "BucketList"
-        - name: MYSQL_USER
-          value: "your_user"
-        - name: MYSQL_PASSWORD
-          value: "your_password"
         ports:
         - containerPort: 3306  # MySQL runs on port 3306
         volumeMounts:
