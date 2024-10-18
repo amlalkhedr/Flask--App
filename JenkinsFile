@@ -22,8 +22,8 @@ pipeline{
     }
     stage('deploy'){
         steps {
-            dir('path/to/your/directory') {
-                sh './K8s-files/start_kubctl.sh'
+            dir('./K8s-files') {
+                sh './start_kubctl.sh'
             }
 
         }
