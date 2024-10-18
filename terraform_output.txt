@@ -1,6 +1,0 @@
-jenkins_instance_id = "i-09f0a45b08ea51ec7"
-jenkins_public_ip = "54.161.174.28"
-jenkins_sg_id = "sg-039af213e585a4c5a"
-private_subnet_id = "subnet-04f8f42e09813d9e4"
-public_subnet_id = "subnet-0825eb08a241dfbe5"
-vpc_id = "vpc-0b31cdda1f6f5e992"

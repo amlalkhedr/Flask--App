@@ -13,10 +13,19 @@ pipeline{
         steps {
             withCredentials([usernamePassword(credentialsId:"docker",usernameVariable:"USER",passwordVariable:"PASS")]){
             sh 'docker build ./BucketList-App/FlaskApp/ -t ${USER}/flask'
+            sh 'docker logout'
             sh 'docker login -u ${USER} -p ${PASS}'
             sh 'docker push ${USER}/flask'
                 
             }
+        }
+    }
+    stage('deploy'){
+        steps {
+            sh 'aws eks --region us-east-1 update-kubeconfig --name my-eks-cluster'
+            sh 'kubectl delete -f K8s-files/flask_app_deployment.yaml'
+            sh 'K8s-files/start_kubectl.sh'
+                
         }
     }
     }
