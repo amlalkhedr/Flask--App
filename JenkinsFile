@@ -22,7 +22,7 @@ pipeline{
     }
     stage('deploy'){
         steps {
-            sh 'K8s-files/start_kubectl.sh'
+            sh './K8s-files/start_kubctl.sh'
                 
         }
     }
