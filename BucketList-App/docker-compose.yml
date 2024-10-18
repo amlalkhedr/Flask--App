@@ -15,7 +15,7 @@ services:
       - db
 
   db:
-    image: mysql:5.7
+    image: wwmezo/db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root_password
