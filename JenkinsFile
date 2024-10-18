@@ -15,7 +15,7 @@ pipeline{
             sh 'docker build ./BucketList-App/FlaskApp/ -t ${USER}/flask'
             sh 'docker logout'
             sh 'docker login -u ${USER} -p ${PASS}'
-            // sh 'docker push ${USER}/flask'
+            sh 'docker push ${USER}/flask'
                 
             }
         }
@@ -34,14 +34,14 @@ pipeline{
             slackSend( // Send a success notification
                 channel: 'flask-app', 
                 color: 'good',  // Green color for success
-                message: "${env.JOB_NAME} is *Build Succeeded* with build no  ${env.BUILD_NUMBER} URL: (<${env.BUILD_URL}|Open>) ${env.BUILD_STATUS}"
+                message: "${env.JOB_NAME} is *Build Succeeded* with build no  ${env.BUILD_NUMBER} URL: (<${env.BUILD_URL}|Open>) "
             )
         }
    failure {
             slackSend(             // Send a failure notification
                 channel: 'flask-app', 
                 color: 'danger',  // Red color for failure
-                message:"${env.JOB_NAME} is *Build Failed* with build no  ${env.BUILD_NUMBER} URL: (<${env.BUILD_URL}|Open>) ${env.BUILD_STATUS}"
+                message:"${env.JOB_NAME} is *Build Failed* with build no  ${env.BUILD_NUMBER} URL: (<${env.BUILD_URL}|Open>) "
 
             )
         }
