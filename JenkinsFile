@@ -3,7 +3,7 @@ pipeline{
     stages {
         stage('prep'){
             steps{
-                 git credentialsId: 'github', url: 'https://github.com/wwmezo0/Flask-App.git', branch: 'main'
+                 git credentialsId: 'github', url: 'https://github.com/wwmezo0/Flask-App.git', branch: 'deploy'
                     
 
             }
