@@ -15,7 +15,7 @@ pipeline{
             sh 'docker build ./BucketList-App/FlaskApp/ -t ${USER}/flask'
             sh 'docker logout'
             sh 'docker login -u ${USER} -p ${PASS}'
-            sh 'docker push ${USER}/flask'
+            // sh 'docker push ${USER}/flask'
                 
             }
         }
