@@ -1,0 +1,74 @@
+---
+- name: Install and Configure AWS CLI v2
+  hosts: [EC2s]
+  become: yes  # Use this if you need root privileges
+  vars_files:
+    - AWS-secret.yml  # Load the secrets file
+
+  vars:
+    aws_region: "us-east-1"  # Replace with your preferred AWS Region
+
+  tasks:
+    - name: Ensure required packages are installed
+      package:
+        name:
+          - curl
+          - unzip
+        state: present
+
+    - name: Download AWS CLI v2
+      get_url:
+        url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+        dest: "/tmp/awscliv2.zip"
+
+    - name: Unzip AWS CLI v2
+      unarchive:
+        src: "/tmp/awscliv2.zip"
+        dest: "/tmp/"
+        remote_src: yes
+
+    - name: Install AWS CLI v2
+      command: "/tmp/aws/install --update"
+
+    - name: Remove downloaded files
+      file:
+        path: "/tmp/awscliv2.zip"
+        state: absent
+      ignore_errors: yes
+
+    - name: Remove installation files
+      file:
+        path: "/tmp/aws"
+        state: absent
+      ignore_errors: yes
+
+    - name: Ensure .aws directory exists
+      file:
+        path: "~/.aws"
+        state: directory
+        mode: '0700'  # Set permissions
+      become: no
+
+    - name: Configure AWS CLI
+      copy:
+        dest: "~/.aws/config"
+        content: |
+          [default]
+          region = {{ aws_region }}
+      become: no  # Ensure this is done as the user, not root
+
+    - name: Configure AWS credentials
+      copy:
+        dest: "~/.aws/credentials"
+        content: |
+          [default]
+          aws_access_key_id = {{ aws_access_key }}
+          aws_secret_access_key = {{ aws_secret_key }}
+      become: no  # Ensure this is done as the user, not root
+
+    - name: Verify AWS CLI installation
+      command: "aws --version"
+      register: aws_version
+
+    - debug:
+        var: aws_version.stdout

@@ -1,8 +1,5 @@
-BucketList-App/app/*
-BucketList-App/db_data/*
-Terraform/.Terraform/**
-Terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/5.71.0/linux_amd64/terraform-provider-aws_v5.71.0_x5
-Ansible/Jenkins_KP.pem
-**/terraform-provider-aws*
+**/db_data/**
+**/.terraform**
+**/Jenkins_KP.pem
 **/terraform.tfstate*
 **/Kctl_to_cluster_command.txt*

@@ -19,11 +19,17 @@ export JENKINS_IP
 echo "Jenkins-EC2-IP: $JENKINS_IP"
 
 echo "[EC2s]" > "Ansible/inventory.ini"
-echo "Jenkins ansible_host=${JENKINS_IP} ansible_user=ubuntu ansible_ssh_private_key_file=/workspaces/Flask-App/Ansible/Jenkins_KP.pem" >> "Ansible/inventory.ini"
+echo "Jenkins ansible_host=${JENKINS_IP} ansible_user=ubuntu ansible_ssh_private_key_file=./Jenkins_KP.pem" >> "Ansible/inventory.ini"
 
+echo "waiting for the machine to start..."
+sleep 8
 #install jenkins on ec2 
 cd ./Ansible
 ansible-playbook -i inventory.ini Jenkins-install-playbook.yml -K
 
 #install Docker on ec2 
 ansible-playbook -i inventory.ini Docker-install-playbook.yml -K
+
+ansible-playbook -i inventory.ini AWS-install-playbook.yml -K
+
+ansible-playbook -i inventory.ini Kubectl-install-playbook.yml -K
