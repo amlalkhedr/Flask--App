@@ -6,4 +6,3 @@ Ansible/Jenkins_KP.pem
 **/terraform-provider-aws*
 **/terraform.tfstate*
 **/Kctl_to_cluster_command.txt*
-/
