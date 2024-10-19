@@ -23,9 +23,9 @@ resource "aws_eks_node_group" "Flask-node-group" {
   subnet_ids      = [var.public_subnet_id]
 
   scaling_config {
-    desired_size = 4  # Normally 1 worker node
-    max_size     = 8  # Maximum of 2 worker nodes
-    min_size     = 4  # Minimum of 1 worker node
+    desired_size = 4  # Normally 4 worker node
+    max_size     = 8  # Maximum of 8 worker nodes
+    min_size     = 4  # Minimum of 4 worker node
   }
 
   instance_types = ["t2.micro"]  # For more CPU and memory capacity
